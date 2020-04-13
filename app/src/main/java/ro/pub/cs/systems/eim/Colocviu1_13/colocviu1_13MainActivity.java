@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class colocviu1_13MainActivity extends AppCompatActivity {
     private Button northButton, southButton, eastButton, westButton, navigateButton;
@@ -39,7 +40,12 @@ public class colocviu1_13MainActivity extends AppCompatActivity {
                     clickedButtons++;
                     break;
                 case R.id.navigate:
-//                    textToView.concat(", East");
+                    Intent intent = new Intent(getApplicationContext(), colocviu1_13SecondaryActivity.class);
+                    String instructions = textView.getText().toString();
+                    intent.putExtra("instructions", instructions);
+                    textView.setText("");
+                    clickedButtons = 0;
+                    startActivityForResult(intent, 69);
                     break;
             }
 
@@ -50,6 +56,16 @@ public class colocviu1_13MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_colocviu1_13_main);
+
+        if (savedInstanceState != null) {
+            if (savedInstanceState.containsKey("Buttons_pressed")) {
+                clickedButtons = savedInstanceState.getInt("Buttons_pressed");
+            } else {
+                clickedButtons = 0;
+            }
+        } else {
+            clickedButtons = 0;
+        }
 
         northButton = (Button)findViewById(R.id.north);
         southButton = (Button)findViewById(R.id.south);
@@ -64,15 +80,6 @@ public class colocviu1_13MainActivity extends AppCompatActivity {
         westButton.setOnClickListener(buttonClickListener);
         navigateButton.setOnClickListener(buttonClickListener);
 
-        if (savedInstanceState != null) {
-            if (savedInstanceState.containsKey("Buttons_pressed")) {
-                clickedButtons = savedInstanceState.getInt("Buttons_pressed");
-            } else {
-                clickedButtons = 0;
-            }
-        } else {
-            clickedButtons = 0;
-        }
         Log.d("MainActivity", "Clicked buttons: "+ clickedButtons);
     }
 
@@ -88,6 +95,13 @@ public class colocviu1_13MainActivity extends AppCompatActivity {
             clickedButtons = savedInstanceState.getInt("Buttons_pressed");
         } else {
             clickedButtons = 0;
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        if (requestCode == 69) {
+            Toast.makeText(this, "The activity returned with result " + resultCode, Toast.LENGTH_LONG).show();
         }
     }
 }
