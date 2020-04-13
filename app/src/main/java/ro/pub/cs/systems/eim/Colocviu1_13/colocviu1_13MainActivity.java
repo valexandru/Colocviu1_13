@@ -2,7 +2,10 @@ package ro.pub.cs.systems.eim.Colocviu1_13;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -15,7 +18,9 @@ public class colocviu1_13MainActivity extends AppCompatActivity {
     TextView textView;
     private String textToView;
     public int clickedButtons;
+    private IntentFilter intentFilter = new IntentFilter();
 
+    private int serviceStatus = 12;
     private ButtonClickListener buttonClickListener = new ButtonClickListener();
     private class ButtonClickListener implements View.OnClickListener {
 
@@ -49,6 +54,25 @@ public class colocviu1_13MainActivity extends AppCompatActivity {
                     break;
             }
 
+            String instrs = textView.getText().toString();
+//            if ( instrs.contains("North") && instrs.contains("South")
+//                    && instrs.contains("East")  && instrs.contains("West")
+            if (clickedButtons == 4 && serviceStatus == 12) {
+                Log.d("MainActivity", "Sunt in if!!");
+                Intent intent = new Intent(getApplicationContext(), Colocviu1_13Service.class);
+                intent.putExtra("instructionsForService", instrs);
+                getApplicationContext().startService(intent);
+                serviceStatus = 10;
+            }
+
+        }
+    }
+
+    private MessageBroadcastReceiver messageBroadcastReceiver = new MessageBroadcastReceiver();
+    private class MessageBroadcastReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.d("MainActivity", intent.getStringExtra("message"));
         }
     }
 
@@ -81,6 +105,7 @@ public class colocviu1_13MainActivity extends AppCompatActivity {
         navigateButton.setOnClickListener(buttonClickListener);
 
         Log.d("MainActivity", "Clicked buttons: "+ clickedButtons);
+        intentFilter.addAction("ro.pub.cs.systems.eim.practicaltest01.sendMessage");
     }
 
     @Override
@@ -96,6 +121,25 @@ public class colocviu1_13MainActivity extends AppCompatActivity {
         } else {
             clickedButtons = 0;
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(messageBroadcastReceiver, intentFilter);
+    }
+
+    @Override
+    protected void onPause() {
+        unregisterReceiver(messageBroadcastReceiver);
+        super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        Intent intent = new Intent(this, Colocviu1_13Service.class);
+        stopService(intent);
+        super.onDestroy();
     }
 
     @Override
